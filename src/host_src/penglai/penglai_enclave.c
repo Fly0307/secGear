@@ -22,6 +22,30 @@
 #define NONCE 12345
 extern list_ops_management g_list_ops;
 
+/**
+ * \brief When processing large files,
+ *        read the file contents in advance to ensure 
+ *        that the mmap maps to the actual file contents
+ * 
+ * \param u_elffile elf data
+*/
+static int elf_preload(struct elf_args *u_elffile)
+{
+  printf("elf_preload: size=0x%lx\n", u_elffile->size);
+  unsigned char *ptr = u_elffile->ptr;
+  unsigned long tmp = 0;
+  if (u_elffile->size < (1<<12))
+  {
+    return 0;
+  }
+  
+  for (size_t i = 0; i < u_elffile->size; i += 4)
+  {
+    tmp += ptr[i] + ptr[i + 1] + ptr[i + 2] + ptr[i + 3];
+  }
+  return tmp;
+}
+
 cc_enclave_result_t _penglai_create(cc_enclave_t *enclave, const enclave_features_t *features,
                                   const uint32_t features_count)
 {
@@ -58,6 +82,7 @@ cc_enclave_result_t _penglai_create(cc_enclave_t *enclave, const enclave_feature
     params->untrusted_mem_size = DEFAULT_UNTRUSTED_SIZE;
     params->untrusted_mem_ptr = 0;
 
+    elf_preload(enclaveFile);
     if(PLenclave_create(penglai_enclave, enclaveFile, params) < 0 ) {
         print_error_term("host: failed to create enclave\n");
         result_cc = CC_ERROR_GENERIC;
@@ -65,7 +90,7 @@ cc_enclave_result_t _penglai_create(cc_enclave_t *enclave, const enclave_feature
     }
     PLenclave_attest(penglai_enclave, NONCE);
     print_debug("penglai enclave create successfully! \n");
-    //
+    
     enclave->private_data = (void *)penglai_enclave;
     result_cc = CC_SUCCESS;
     goto done_success;

@@ -52,6 +52,8 @@ if(CC_SGX)
     target_link_libraries(${OUTPUT} secgear ${Urts_Library_Name} pthread ssl crypto sgx_usgxssl)
 endif()
 
+add_compile_definitions($<$<BOOL:${ENABLE_ENC_KEY}>:ENABLE_ENC_KEY>)
+
 if(CC_PL)
     if(${CMAKE_VERSION} VERSION_LESS "3.13.0")
         link_directories(${CMAKE_LIBRARY_OUTPUT_DIRECTORY})

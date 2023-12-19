@@ -194,11 +194,13 @@ int main(int argc, const char *argv[])
         return CC_FAIL;
     }
     printf("Create secgear enclave success\n");
+#ifdef ENABLE_ENC_KEY
     res = get_password_and_seal_key(context, argv[3], ENC_KEY_FILE_NAME);
     if (res !=  CC_SUCCESS) {
         printf("get_password_and_seal_key error\n");
         goto end;
    }
+#endif
     memcpy(report, (char*)(context->private_data) + PLENCLAVE_SIZE-REPORT_SIZE, REPORT_SIZE);
     // 打印读取到的数据
     printf("begin print report:");

@@ -96,10 +96,10 @@ https://ipads.se.sjtu.edu.cn:1313/d/6a464e02cd3d4c1bafb0/
 
 ```shell
 cd ./secGear/debug
-cmake -DCMAKE_BUILD_TYPE=Debug -DENCLAVE=PL -DSDK_PATH=root/dev/sdk -DSSL_PATH=/root/dev/sdk/penglai_sdk_ssl -DPL_SSLLIB_PATH=/opt/penglai/openssl .. && make && make install
+cmake -DENABLE_ENC_KEY=1  -DCMAKE_BUILD_TYPE=Debug -DENCLAVE=PL -DSDK_PATH=root/dev/sdk -DSSL_PATH=/root/dev/sdk/penglai_sdk_ssl -DPL_SSLLIB_PATH=/opt/penglai/openssl .. && make && make install
 ```
 
-编译成功后，其他demo位于`./secGear/debug/bin`目录下,当前可直接执行除**tls_enclave**之外的demo
+编译成功后，demo程序位于`./secGear/debug/bin`目录下，在执行`insmod penglai.ko`可直接运行除tls之外的demo。
 
 ### 运行tls_demo注意事项
 检查`secGear/examples/CMakeLists.txt`中的tls_demo对应部分编译模块是否启用,启用后编译完成会在编译目录`./secGear/debug/bin`下生成两个程序secgear_tls作为server，tls_client作为client
@@ -119,14 +119,10 @@ cmake -DCMAKE_BUILD_TYPE=Debug -DENCLAVE=PL -DSDK_PATH=root/dev/sdk -DSSL_PATH=/
 	./bin/secgear_tls 9090 server.pem server.key
 	./bin/tls_client 9090 server.pem
 
-在第一次执行后会生成一个由Enclave生成的enc_key用于加密，由于当前Enclave创建使用一次后会销毁，在生成enc_key后可以注释生成enc_key部分的代码，以保留Enclave执行后面的tls通信程序。
-
-	#注释examples/tls_enclave/host/main.c中get_password_and_seal_key部分
-	// res = get_password_and_seal_key(context, argv[3], ENC_KEY_FILE_NAME);
-    // if (res !=  CC_SUCCESS) {
-    //     printf("get_password_and_seal_key error\n");
-    //     goto end;
-    // }
+在第一次执行后会生成一个由Enclave生成的enc_key用于加密通信，由于当前Enclave创建使用一次后会销毁，在生成enc_key后，重新的当前debug目录执行编译指令（由上一条ENABLE_ENC_KEY=1改为ENABLE_ENC_KEY=0） :
+```shell
+cmake -DENABLE_ENC_KEY=0 -DCMAKE_BUILD_TYPE=Debug -DENCLAVE=PL -DSDK_PATH=/root/dev/sdk -DSSL_PATH=/root/dev/sdk/penglai_sdk_ssl -DPL_SSLLIB_PATH=/opt/penglai/openssl .. && make -j$(nproc) && make install
+```
 
 重新执行client和server程序
 

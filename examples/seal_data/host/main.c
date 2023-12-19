@@ -15,12 +15,14 @@
 #include "seal_data_u.h"
 
 #define BUF_LEN 32
+#define IN_LEN 16
 
 int main()
 {
     int  retval = 0;
     char *path = PATH;
     char buf[BUF_LEN];
+    char in[IN_LEN];
     cc_enclave_result_t res;
     cc_enclave_t context = {0};
     printf("Create secgear enclave\n");
@@ -29,8 +31,13 @@ int main()
         printf("Create enclave error\n");
         return res;
     }
-
-    res = seal_data_test_func(&context, &retval, buf, BUF_LEN);
+    const char *str = "abcd123";  // 要赋值的字符串
+    int i;
+    for (i = 0; i < IN_LEN - 1 && str[i] != '\0'; ++i) {
+        in[i] = str[i];
+    }
+    in[i] = '\0';  // 确保在数组末尾添加空字符
+    res = seal_data_test_func(&context, &retval, in, 16, buf, IN_LEN);
     if (res != CC_SUCCESS || retval != (int)CC_SUCCESS) {
         printf("Ecall enclave error\n");
     } else {

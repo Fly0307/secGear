@@ -29,7 +29,7 @@ uint8_t *malloc_with_check(uint32_t size)
     return ptr;
 }
 
-int seal_data_test_func(char *buf, uint32_t buf_len)
+int seal_data_test_func(char* in, uint32_t in_len, char* buf, uint32_t buf_len)
 {
     if (buf_len == 0 || buf == NULL) 
         return CC_ERROR_BAD_PARAMETERS;
@@ -74,6 +74,7 @@ int seal_data_test_func(char *buf, uint32_t buf_len)
         ret = CC_ERROR_GENERIC;
         goto error1;
     }
+    eapp_print("[seal_key] in:%s\n",in);
     strncpy(buf, (const char *)decrypted_seal_data, encrypt_data_len);
 error1:
     free(demac_data);
