@@ -20,6 +20,7 @@
 #include "penglai-enclave.h"
 #include "penglai_enclave.h"
 #define NONCE 12345
+#define PAGE_ORDER 12
 extern list_ops_management g_list_ops;
 
 /**
@@ -34,15 +35,17 @@ static int elf_preload(struct elf_args *u_elffile)
   printf("elf_preload: size=0x%lx\n", u_elffile->size);
   unsigned char *ptr = u_elffile->ptr;
   unsigned long tmp = 0;
-  if (u_elffile->size < (1<<12))
+  if (u_elffile->size < (1 << PAGE_ORDER))
   {
     return 0;
   }
-  
-  for (size_t i = 0; i < u_elffile->size; i += 4)
+  size_t i;
+  for (i = 0; i < u_elffile->size; i += 1 << (PAGE_ORDER/3))
   {
-    tmp += ptr[i] + ptr[i + 1] + ptr[i + 2] + ptr[i + 3];
+    tmp &= ptr[i];
   }
+  i = u_elffile->size; 
+  tmp &= ptr[i-1] + ptr[i-2] + ptr[i-3];
   return tmp;
 }
 
